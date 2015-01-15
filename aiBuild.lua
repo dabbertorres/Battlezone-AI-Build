@@ -10,7 +10,7 @@ aiBuild.Factions = {NSDF = 1, CCA = 2, CRA = 3, BDOG = 4}
 
 aiBuild.Faction = {}
 
-aiBuild.Faction.NSDF = 
+aiBuild.Faction[aiBuild.Factions.NSDF] = 
 {
 	constructor = "avcnst",
 	sPower = "abspow",
@@ -26,7 +26,7 @@ aiBuild.Faction.NSDF =
 	hq = "abhqcp"
 }
 	
-aiBuild.Faction.CCA = 
+aiBuild.Faction[aiBuild.Factions.CCA] = 
 {
 	constructor = "svcnst",
 	sPower = "sbspow",
@@ -42,7 +42,7 @@ aiBuild.Faction.CCA =
 	hq = "sbhqcp"
 }
 
-aiBuild.Faction.CRA = 
+aiBuild.Faction[aiBuild.Factions.CRA] = 
 {
 	constructor = "cvcnst",
 	sPower = "cbspow",
@@ -58,7 +58,7 @@ aiBuild.Faction.CRA =
 	hq = "cbhqcp"
 }
 
-aiBuild.Faction.BDOG = 
+aiBuild.Faction[aiBuild.Factions.BDOG] = 
 {
 	constructor = "bvcnst",
 	sPower = "abspow",
@@ -81,6 +81,7 @@ aiBuild.Building =
 	path = "",
 	priority = 0
 }
+aiBuild.Building.__index = aiBuild.Building
 
 aiBuild.Constructor = 
 {
@@ -88,6 +89,7 @@ aiBuild.Constructor =
 	team = 0,
 	queue = {}
 }
+aiBuild.Constructor.__index = aiBuild.Constructor
 
 function aiBuild.Constructor:update()
 	--sort the queue by priority
@@ -114,19 +116,19 @@ aiBuild.Team =
 	makingNewConst = false,
 	buildingList = {}
 }
+aiBuild.Team.__index = aiBuild.Team
 
 --num = team number, f = faction num
 function aiBuild.Team.new(num, f)
-	local newTeam = {}
-	setmetatable(newTeam, Team)
+	local newTeam = setmetatable({}, aiBuild.Team)
 	newTeam.teamNum = num
 	newTeam.faction = f
 	
-	setmetatable(newTeam.constructor, Constructor)
+	newTeam.constructor = setmetatable({}, aiBuild.Constructor)
 	newTeam.constructor.handle = GetConstructorHandle(teamNum)
 	
 	if newTeam.constructor.handle == nil then
-		Build(GetRecyclerHandle(newTeam.teamNum), Faction[f].constructor)
+		Build(GetRecyclerHandle(newTeam.teamNum), aiBuild.Faction[newTeam.faction].constructor)
 		newTeam.makingNewConst = true
 	end
 	
@@ -135,15 +137,15 @@ end
 
 --this should be called inside of the Script's function Update()
 function aiBuild.Team:update()
-	local result = constructor:update()
+	local result = self.constructor:update()
 	
 	if not result and not makingNewConst then
-		Build(GetRecyclerHandle(self.teamNum), Faction[self.faction].constructor)
+		Build(GetRecyclerHandle(self.teamNum), aiBuild.Faction[self.faction].constructor)
 		self.makingNewConst = true
 	end
 	
 	--iterate over buildings, if  destroyed, then add to queue to build
-	for b in self.buildingList do
+	for i, b in ipairs(self.buildingList) do
 		if not IsValid(b.handle) then
 			table.insert(self.constructor.queue, b)
 		end
@@ -170,7 +172,7 @@ function aiBuild.Team:addObject(h)
 			
 			table.remove(self.constructor.queue, 1)
 		end
-	elseif IsOdf(h, Faction[self.faction].constructor) then	--got a new constructor.
+	elseif IsOdf(h, aiBuild.Faction[self.faction].constructor) then	--got a new constructor.
 		self.constructor = h
 		self.makingNewConst = false
 	end
