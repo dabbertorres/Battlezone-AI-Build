@@ -147,7 +147,17 @@ function aiBuild.Team:update()
 	--iterate over buildings, if  destroyed, then add to queue to build
 	for i, b in ipairs(self.buildingList) do
 		if not IsValid(b.handle) then
-			table.insert(self.constructor.queue, b)
+			local inQueue = false
+			for j, v in ipairs(self.constructor.queue) do
+				if v == b then
+					inQueue = true
+					break
+				end
+			end
+			
+			if not inQueue then
+				table.insert(self.constructor.queue, b)
+			end
 		end
 	end
 end
