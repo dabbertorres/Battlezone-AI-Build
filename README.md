@@ -13,7 +13,7 @@ Next, create a Team variable for each AI team:
 aiTeamOne = aiBuild.Team.new(teamNumber, FactionNumber)
 ```
 
-If you haven't yet, create AddObject(h) and Update() functions in your script and call aiBuild.Team:update() and aiBuild.Team:addObject(h) in their respective functions:
+If you haven't yet, create AddObject(h) and Update() functions in your script and call aiTeamOne:update() and aiTeamOne:addObject(h) in their respective functions:
 ```lua
 function AddObject(h)
   aiTeamOne:addObject(h)
