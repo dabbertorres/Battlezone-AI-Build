@@ -114,7 +114,6 @@ aiBuild.Team =
 	teamNum = 0,
 	faction = 0,
 	constructor = nil,
-	makingNewConst = false,
 	buildingList = {}
 }
 
@@ -126,24 +125,16 @@ function aiBuild.Team.new(num, f)
 	
 	newTeam.constructor = setmetatable({}, aiBuild.Constructor)
 	newTeam.constructor.team = newTeam.teamNum
-	newTeam.constructor.handle = GetConstructorHandle(teamNum)
-	
-	if newTeam.constructor.handle == nil then
-		Build(GetRecyclerHandle(newTeam.teamNum), aiBuild.Faction[newTeam.faction].constructor)
-		newTeam.makingNewConst = true
-	end
+	newTeam.constructor.handle = GetConstructorHandle(newTeam.teamNum)
 	
 	return newTeam
 end
 
 --this should be called inside of the Script's function Update()
 function aiBuild.Team:update()
-	local result = self.constructor:update()
+	self.constructor.handle = GetConstructorHandle(self.teamNum)
 	
-	if not result and not makingNewConst then
-		Build(GetRecyclerHandle(self.teamNum), aiBuild.Faction[self.faction].constructor)
-		self.makingNewConst = true
-	end
+	local result = self.constructor:update()
 	
 	--iterate over buildings, if  destroyed, then add to queue to build
 	for p, b in pairs(self.buildingList) do
@@ -181,9 +172,6 @@ function aiBuild.Team:addObject(h)
 			self.buildingList[self.constructor.queue[1].path].handle = h
 			table.remove(self.constructor.queue, 1)
 		end
-	elseif IsOdf(h, aiBuild.Faction[self.faction].constructor) then	--got a new constructor.
-		self.constructor.handle = h
-		self.makingNewConst = false
 	end
 end
 
