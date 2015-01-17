@@ -183,7 +183,7 @@ function aiBuild.Team:addObject(h)
 			table.remove(self.constructor.queue, 1)
 		end
 	elseif IsOdf(h, aiBuild.Faction[self.faction].constructor) then	--got a new constructor.
-		self.constructor = h
+		self.constructor.handle = h
 		self.makingNewConst = false
 	end
 end
