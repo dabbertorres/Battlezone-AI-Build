@@ -89,17 +89,17 @@ aiBuild.Constructor =
 	team = 0,
 	queue = {}
 }
-aiBuild.Constructor.__index = aiBuild.Constructor
 
 function aiBuild.Constructor:update()
 	--sort the queue by priority
 	table.sort(self.queue, function(one, two) return one.priority > two.priority end)
 
-	if self.handle ~= nil then
-		if table.length(self.queue) == 0 then
-			Goto(self.handle, GetRecyclerHandle(self.team))
+	if IsValid(self.handle) then
+		if #self.queue == 0 then
+			Goto(self.handle, GetRecyclerHandle(self.team), 0)
 		elseif CanCommand(self.handle) and CanBuild(self.handle) and not IsBusy(self.handle) then
-			BuildAt(self.handle, self.queue[1].odf, self.queue.path)
+			BuildAt(self.handle, self.queue[1].odf, self.queue[1].path)
+			table.remove(self.queue, 1)
 		end
 		
 		return true		--all is well in the world. Minus the battle going on
@@ -107,6 +107,8 @@ function aiBuild.Constructor:update()
 		return false	--send signal to build a new constructor
 	end
 end
+
+aiBuild.Constructor.__index = aiBuild.Constructor
 
 aiBuild.Team = 
 {
@@ -116,7 +118,6 @@ aiBuild.Team =
 	makingNewConst = false,
 	buildingList = {}
 }
-aiBuild.Team.__index = aiBuild.Team
 
 --num = team number, f = faction num
 function aiBuild.Team.new(num, f)
@@ -125,6 +126,7 @@ function aiBuild.Team.new(num, f)
 	newTeam.faction = f
 	
 	newTeam.constructor = setmetatable({}, aiBuild.Constructor)
+	newTeam.constructor.team = newTeam.teamNum
 	newTeam.constructor.handle = GetConstructorHandle(teamNum)
 	
 	if newTeam.constructor.handle == nil then
@@ -146,7 +148,7 @@ function aiBuild.Team:update()
 	
 	--iterate over buildings, if  destroyed, then add to queue to build
 	for i, b in ipairs(self.buildingList) do
-		if not IsValid(b.handle) then
+		if b.handle == nil or not IsValid(b.handle) then
 			local inQueue = false
 			for j, v in ipairs(self.constructor.queue) do
 				if v == b then
@@ -171,17 +173,17 @@ function aiBuild.Team:addObject(h)
 	
 	if IsBuilding(h) then
 		--if the building is the right type, and it's basically at the correct path, it's the right building
-		if IsOdf(h, self.constructor.queue[1].odf) and GetDistance(h, self.constructor.queue[1].path) < 20 then
+		--[[if IsOdf(h, self.constructor.queue[1].odf) and GetDistance(h, self.constructor.queue[1].path) < 60 then
 			self.constructor.queue[1].handle = h
 			
-			for b in self.buildingList do
+			for i, b in ipairs(self.buildingList) do
 				if self.constructor.queue[1] == b then
 					b.handle = h
 				end
 			end
 			
 			table.remove(self.constructor.queue, 1)
-		end
+		end]]
 	elseif IsOdf(h, aiBuild.Faction[self.faction].constructor) then	--got a new constructor.
 		self.constructor.handle = h
 		self.makingNewConst = false
@@ -189,11 +191,12 @@ function aiBuild.Team:addObject(h)
 end
 
 function aiBuild.Team:addBuilding(odf, path, priority)
-	local newBuilding = {}
-	setmetatable(newBuilding, Building)
+	local newBuilding = setmetatable({}, aiBuild.Building)
 	newBuilding.handle = nil
 	newBuilding.odf = odf
 	newBuilding.path = path
 	newBuilding.priority = priority
 	table.insert(self.buildingList, newBuilding)
 end
+
+aiBuild.Team.__index = aiBuild.Team
