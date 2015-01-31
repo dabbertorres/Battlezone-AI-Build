@@ -175,7 +175,7 @@ function aiBuild.Team:addObject(h)
 		return
 	end
 	
-	if IsBuilding(h) or IsOdf(h, aiBuild.Faction[self.faction].gunTower) then
+	if self.constructor.queue[1] ~= nil and (IsBuilding(h) or IsOdf(h, aiBuild.Faction[self.faction].gunTower)) then
 		--if the building is the right type, and it's basically at the correct path, it's the right building
 		if IsOdf(h, self.constructor.queue[1].odf) and IsWithin(h, self.constructor.handle, 60) then
 			self.buildingList[self.constructor.queue[1].path].handle = h
