@@ -94,6 +94,11 @@ function aiBuild.Constructor:update()
 	--sort the queue by priority
 	table.sort(self.queue, function(one, two) return one.priority > two.priority end)
 	
+	--if we have a bad object in the queue, just remove it
+	if self.queue[1] == nil then
+		table.remove(self.queue, 1)
+	end
+	
 	if IsValid(self.handle) then
 		if #self.queue == 0 then
 			Goto(self.handle, GetRecyclerHandle(self.team), 0)
@@ -175,7 +180,7 @@ function aiBuild.Team:addObject(h)
 		return
 	end
 	
-	if self.constructor.queue[1] ~= nil and (IsBuilding(h) or IsOdf(h, aiBuild.Faction[self.faction].gunTower)) then
+	if IsBuilding(h) or IsOdf(h, aiBuild.Faction[self.faction].gunTower) then
 		--if the building is the right type, and it's basically at the correct path, it's the right building
 		if IsOdf(h, self.constructor.queue[1].odf) and IsWithin(h, self.constructor.handle, 60) then
 			self.buildingList[self.constructor.queue[1].path].handle = h
