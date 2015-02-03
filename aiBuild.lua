@@ -105,10 +105,8 @@ function aiBuild.Constructor:update()
 		elseif CanBuild(self.handle) and not IsBusy(self.handle) then
 			BuildAt(self.handle, self.queue[1].odf, self.queue[1].path)
 		end
-		
-		return true		--all is well in the world. Minus the battle going on
 	else
-		return false	--send signal to build a new constructor
+		self.handle = GetConstructorHandle(self.team)
 	end
 end
 
@@ -133,22 +131,12 @@ function aiBuild.Team.new(num, f)
 	newTeam.constructor.team = newTeam.teamNum
 	newTeam.constructor.handle = GetConstructorHandle(teamNum)
 	
-	if newTeam.constructor.handle == nil then
-		Build(GetRecyclerHandle(newTeam.teamNum), aiBuild.Faction[newTeam.faction].constructor)
-		newTeam.makingNewConst = true
-	end
-	
 	return newTeam
 end
 
 --this should be called inside of the Script's function Update()
 function aiBuild.Team:update()
-	local result = self.constructor:update()
-	
-	if not result and not makingNewConst then
-		Build(GetRecyclerHandle(self.teamNum), aiBuild.Faction[self.faction].constructor)
-		self.makingNewConst = true
-	end
+	self.constructor:update()
 	
 	--iterate over buildings, if  destroyed, then add to queue to build
 	for p, b in pairs(self.buildingList) do
@@ -186,9 +174,6 @@ function aiBuild.Team:addObject(h)
 			self.buildingList[self.constructor.queue[1].path].handle = h
 			table.remove(self.constructor.queue, 1)
 		end
-	elseif IsOdf(h, aiBuild.Faction[self.faction].constructor) then	--got a new constructor.
-		self.constructor.handle = h
-		self.makingNewConst = false
 	end
 end
 
