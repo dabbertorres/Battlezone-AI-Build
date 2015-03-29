@@ -126,6 +126,7 @@ function aiBuild.Team.new(num, f)
 	local newTeam = setmetatable({}, aiBuild.Team)
 	newTeam.teamNum = num
 	newTeam.faction = f
+	newTeam.buildingList = {}
 	
 	newTeam.constructor = setmetatable({}, aiBuild.Constructor)
 	newTeam.constructor.team = newTeam.teamNum
