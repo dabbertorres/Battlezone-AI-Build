@@ -130,6 +130,7 @@ function aiBuild.Team.new(num, f)
 	newTeam.constructor = setmetatable({}, aiBuild.Constructor)
 	newTeam.constructor.team = newTeam.teamNum
 	newTeam.constructor.handle = GetConstructorHandle(teamNum)
+	newTeam.constructor.queue = {}
 	
 	return newTeam
 end
